@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") 
+}
+
+enum Role {
+  ADMIN
+  VENDEDOR
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(VENDEDOR)
+  createdAt DateTime @default(now())
+  orders    Order[]
+}
+
+model Product {
+  id         Int         @id @default(autoincrement())
+  name       String
+  price      Float
+  available  Boolean     @default(true)
+  imageUrl   String?
+  createdAt  DateTime    @default(now())
+  orderItems OrderItem[]
+  discounts ProductDiscount[]
+}
+
+model Order {
+  id            Int           @id @default(autoincrement())
+  userId        Int
+  user          User          @relation(fields: [userId], references: [id])
+  total         Float
+  paymentMethod PaymentMethod @default(CASH)
+  status        OrderStatus   @default(COMPLETED)
+  createdAt     DateTime      @default(now())
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+}
+
+model Discount {
+  id          Int               @id @default(autoincrement())
+  name        String
+  percentage  Float
+  applyToAll  Boolean           @default(false)
+  active      Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  products    ProductDiscount[]
+}
+
+model ProductDiscount {
+  productId  Int
+  discountId Int
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  discount   Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
+
+  @@id([productId, discountId])
+}

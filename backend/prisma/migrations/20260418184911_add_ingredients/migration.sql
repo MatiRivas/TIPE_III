@@ -1,0 +1,11 @@
+-- CreateTable
+CREATE TABLE "Ingredient" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "unit" TEXT NOT NULL,
+    "stock" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "minStock" DOUBLE PRECISION NOT NULL DEFAULT 5,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Ingredient_pkey" PRIMARY KEY ("id")
+);

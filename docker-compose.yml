@@ -1,0 +1,43 @@
+version: '3.8' 
+ 
+services: 
+  postgres: 
+    image: postgres:16-alpine 
+    container_name: pos_db 
+    environment: 
+      POSTGRES_USER: admin 
+      POSTGRES_PASSWORD: admin123 
+      POSTGRES_DB: pos_mojito 
+    ports: 
+      - "5433:5432" 
+    volumes: 
+      - postgres_data:/var/lib/postgresql/data 
+  backend: 
+    build: ./backend 
+    container_name: pos_backend 
+    ports: 
+      - "4000:3000" 
+    environment: 
+      DATABASE_URL: postgresql://admin:admin123@postgres:5432/pos_mojito 
+      JWT_SECRET: supersecretkey 
+      NODE_ENV: development 
+    depends_on: 
+      - postgres 
+    volumes: 
+      - ./backend:/app 
+      - /app/node_modules 
+  frontend: 
+    build: ./frontend 
+    container_name: pos_frontend 
+    ports: 
+      - "5173:5173" 
+    environment: 
+      VITE_API_URL: http://localhost:3000/api 
+      VITE_WS_URL: http://localhost:3000 
+    depends_on: 
+      - backend 
+    volumes: 
+      - ./frontend:/app 
+      - /app/node_modules 
+volumes: 
+  postgres_data: 
